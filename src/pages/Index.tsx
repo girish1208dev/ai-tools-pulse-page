@@ -9,7 +9,8 @@ const Index = () => {
   useEffect(() => {
     const fetchAiTools = async () => {
       try {
-        const res = await fetch('https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md');
+        const res = await fetch('https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/contents/src/pages/Index.tsx
+');
         const text = await res.text();
         setAiToolsText(text);
       } catch (error) {
