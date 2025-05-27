@@ -7,4 +7,4 @@
 7. **Runway ML** - AI video editing and generation platform
 8. **DeepL** - Neural machine translation with superior accuracy
 9. **Grammarly** - AI-powered writing enhancement and grammar checking
-10. **Canva AI** - Intelligent design assistant for graphics and presentations
+10. **Canva AI** - Intelligent design assistant for graphics and present
