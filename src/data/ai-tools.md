@@ -1,4 +1,4 @@
-1. **Chat** - Advanced conversational AI for writing, coding, and problem-solving
+1. **Cht** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Cde** - Anthropic's AI assistant for analysis, writing, and creative tasks  
 3. **Midjourney** - AI-powered image generation and artistic creation
 4. **GitHub Copilot** - AI pair programmer for code suggestions and completion
