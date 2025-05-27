@@ -15,7 +15,7 @@ const Index = () => {
         
         // Add cache-busting parameter with current timestamp
         const timestamp = new Date().getTime();
-        const githubUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
+       const githubUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
         
         const response = await fetch(githubUrl, {
           method: 'GET',
