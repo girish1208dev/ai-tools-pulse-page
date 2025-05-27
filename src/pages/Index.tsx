@@ -11,7 +11,8 @@ const Index = () => {
       try {
         // Try to load from local file first
         console.log('Attempting to load local AI tools content...');
-        const localResponse = await fetch('/src/data/ai-tools.md');
+        const localResponse = await fetch('https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md
+');
         
         if (localResponse.ok) {
           const text = await localResponse.text();
