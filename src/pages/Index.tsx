@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ArrowUp, Twitter, Linkedin, Github } from 'lucide-react';
 
@@ -11,13 +10,12 @@ const Index = () => {
   useEffect(() => {
     const fetchAiTools = async () => {
       try {
-        console.log('Attempting to load AI tools content from GitHub...');
-        
-        // Add cache-busting parameter with current timestamp
+        console.log('Attempting to load AI tools content from GitHub using CORS proxy...');
         const timestamp = new Date().getTime();
-       const githubUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
-        
-        const response = await fetch(githubUrl, {
+        const githubRawUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(githubRawUrl)}`;
+
+        const response = await fetch(proxyUrl, {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -25,30 +23,17 @@ const Index = () => {
             'Expires': '0'
           }
         });
-        
+
         if (response.ok) {
           const text = await response.text();
           console.log('Successfully loaded content from GitHub:', text);
           setAiToolsText(text);
           setLastUpdated(new Date());
         } else {
-          console.log('GitHub fetch failed, using fallback content');
-          // Fallback to the content from your ai-tools.md file
-          const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
-2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
-3. **Midjourney** - AI-powered image generation and artistic creation
-4. **GitHub Copilot** - AI pair programmer for code suggestions and completion
-5. **Notion AI** - Intelligent writing assistant integrated into Notion workspace
-6. **Jasper** - AI copywriting tool for marketing and content creation
-7. **Runway ML** - AI video editing and generation platform
-8. **DeepL** - Neural machine translation with superior accuracy
-9. **Grammarly** - AI-powered writing enhancement and grammar checking
-10. **Canva AI** - Intelligent design assistant for graphics and presentations`;
-          setAiToolsText(fallbackContent);
+          throw new Error('GitHub fetch failed');
         }
       } catch (error) {
         console.error('Failed to fetch AI tools list from GitHub:', error);
-        // Use fallback content in case of error
         const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
 3. **Midjourney** - AI-powered image generation and artistic creation
@@ -64,7 +49,7 @@ const Index = () => {
     };
 
     fetchAiTools(); // Initial fetch
-    const interval = setInterval(fetchAiTools, 30000); // Update every 30 seconds for faster testing
+    const interval = setInterval(fetchAiTools, 120000); // Refresh every 2 minutes
 
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -171,7 +156,7 @@ const Index = () => {
             Stay Updated
           </h3>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            This list is automatically updated every 30 seconds with the latest AI tools from our GitHub repository. 
+            This list is automatically updated every 2 minutes with the latest AI tools from our GitHub repository. 
             Bookmark this page to stay current with the rapidly evolving AI landscape.
           </p>
           <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
