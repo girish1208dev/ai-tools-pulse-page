@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ArrowUp, Twitter, Linkedin, Github } from 'lucide-react';
 
@@ -5,21 +6,33 @@ const Index = () => {
   const [aiToolsText, setAiToolsText] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchAiTools = async () => {
       try {
-        // Try to load from local file first
-        console.log('Attempting to load local AI tools content...');
-        const localResponse = await fetch('https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md
-');
+        console.log('Attempting to load AI tools content from GitHub...');
         
-        if (localResponse.ok) {
-          const text = await localResponse.text();
-          console.log('Loaded local AI tools content:', text);
+        // Add cache-busting parameter with current timestamp
+        const timestamp = new Date().getTime();
+        const githubUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
+        
+        const response = await fetch(githubUrl, {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        
+        if (response.ok) {
+          const text = await response.text();
+          console.log('Successfully loaded content from GitHub:', text);
           setAiToolsText(text);
+          setLastUpdated(new Date());
         } else {
-          console.log('Local file not available, using fallback content');
+          console.log('GitHub fetch failed, using fallback content');
           // Fallback to the content from your ai-tools.md file
           const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
@@ -34,7 +47,7 @@ const Index = () => {
           setAiToolsText(fallbackContent);
         }
       } catch (error) {
-        console.error('Failed to fetch AI tools list:', error);
+        console.error('Failed to fetch AI tools list from GitHub:', error);
         // Use fallback content in case of error
         const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
@@ -51,7 +64,7 @@ const Index = () => {
     };
 
     fetchAiTools(); // Initial fetch
-    const interval = setInterval(fetchAiTools, 120000); // Update every 2 minutes
+    const interval = setInterval(fetchAiTools, 30000); // Update every 30 seconds for faster testing
 
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -110,9 +123,16 @@ const Index = () => {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            AI Tools Hub
-          </h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              AI Tools Hub
+            </h1>
+            {lastUpdated && (
+              <div className="text-sm text-gray-500">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -151,12 +171,12 @@ const Index = () => {
             Stay Updated
           </h3>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            This list is automatically updated every 2 minutes with the latest AI tools and trends. 
+            This list is automatically updated every 30 seconds with the latest AI tools from our GitHub repository. 
             Bookmark this page to stay current with the rapidly evolving AI landscape.
           </p>
           <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            Live Updates Active
+            Live Updates from GitHub
           </div>
         </div>
       </section>
@@ -186,7 +206,7 @@ const Index = () => {
           
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 AI Tools Hub. All rights reserved. | Content updated via n8n automation
+              © 2024 AI Tools Hub. All rights reserved. | Content synced from GitHub repository
             </p>
           </div>
         </div>
