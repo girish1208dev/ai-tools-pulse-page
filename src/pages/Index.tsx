@@ -1,40 +1,33 @@
+
 import { useState, useEffect } from 'react';
-import { ArrowUp, Twitter, Linkedin, Github } from 'lucide-react';
+import { ArrowUp, Twitter, Linkedin, Github, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [aiToolsText, setAiToolsText] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchAiTools = async () => {
-      try {
-        console.log('Attempting to load AI tools content from GitHub using CORS proxy...');
-        const timestamp = new Date().getTime();
-        const githubRawUrl = `https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md?t=${timestamp}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(githubRawUrl)}`;
-
-        const response = await fetch(proxyUrl, {
-          method: 'GET',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        });
-
-        if (response.ok) {
-          const text = await response.text();
-          console.log('Successfully loaded content from GitHub:', text);
-          setAiToolsText(text);
-          setLastUpdated(new Date());
-        } else {
-          throw new Error('GitHub fetch failed');
-        }
-      } catch (error) {
-        console.error('Failed to fetch AI tools list from GitHub:', error);
-        const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
+  const loadAiToolsContent = async () => {
+    try {
+      console.log('Loading AI tools content from local file...');
+      const response = await fetch('/src/data/ai-tools.md');
+      
+      if (response.ok) {
+        const text = await response.text();
+        console.log('Successfully loaded content:', text);
+        setAiToolsText(text);
+        setLastUpdated(new Date());
+        return true;
+      } else {
+        throw new Error('Failed to load local file');
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI tools list:', error);
+      const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
 3. **Midjourney** - AI-powered image generation and artistic creation
 4. **GitHub Copilot** - AI pair programmer for code suggestions and completion
@@ -44,12 +37,33 @@ const Index = () => {
 8. **DeepL** - Neural machine translation with superior accuracy
 9. **Grammarly** - AI-powered writing enhancement and grammar checking
 10. **Canva AI** - Intelligent design assistant for graphics and presentations`;
-        setAiToolsText(fallbackContent);
-      }
-    };
+      setAiToolsText(fallbackContent);
+      setLastUpdated(new Date());
+      return false;
+    }
+  };
 
-    fetchAiTools(); // Initial fetch
-    const interval = setInterval(fetchAiTools, 120000); // Refresh every 2 minutes
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    const success = await loadAiToolsContent();
+    setIsRefreshing(false);
+    
+    if (success) {
+      toast({
+        title: "Content Updated",
+        description: "AI tools list has been refreshed successfully.",
+      });
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "Using fallback content. Check console for details.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    loadAiToolsContent();
 
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -59,7 +73,6 @@ const Index = () => {
     window.addEventListener('scroll', handleScroll);
 
     return () => {
-      clearInterval(interval);
       clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
     };
@@ -112,11 +125,21 @@ const Index = () => {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               AI Tools Hub
             </h1>
-            {lastUpdated && (
-              <div className="text-sm text-gray-500">
-                Last updated: {lastUpdated.toLocaleTimeString()}
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {lastUpdated && (
+                <div className="text-sm text-gray-500">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </div>
+              )}
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md text-sm transition-colors"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -156,12 +179,12 @@ const Index = () => {
             Stay Updated
           </h3>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            This list is automatically updated every 2 minutes with the latest AI tools from our GitHub repository. 
-            Bookmark this page to stay current with the rapidly evolving AI landscape.
+            Click the refresh button in the header to manually update the content. 
+            The list contains the latest AI news and trending topics.
           </p>
           <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            Live Updates from GitHub
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            Content Available Locally
           </div>
         </div>
       </section>
@@ -183,7 +206,7 @@ const Index = () => {
               <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300 hover:scale-110 transform">
                 <Linkedin size={24} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300 hover:scale-110 transform">
+              <a href="https://github.com/girish1208dev/ai-tools-pulse-page" className="text-gray-400 hover:text-white transition-colors duration-300 hover:scale-110 transform">
                 <Github size={24} />
               </a>
             </div>
