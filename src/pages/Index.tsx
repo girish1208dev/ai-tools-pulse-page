@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ArrowUp, Twitter, Linkedin, Github, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -13,20 +12,33 @@ const Index = () => {
 
   const loadAiToolsContent = async () => {
     try {
-      console.log('Loading AI tools content from local file...');
-      const response = await fetch('/src/data/ai-tools.md');
+      console.log('Loading AI tools content from GitHub repository...');
+      
+      // Fetch directly from GitHub raw content URL
+      // Replace 'username' and 'repository-name' with your actual GitHub username and repository name
+      const githubUrl = 'https://raw.githubusercontent.com/girish1208dev/ai-tools-pulse-page/main/src/data/ai-tools.md';
+      
+      // Add cache-busting parameter to ensure fresh content
+      const cacheBuster = `?t=${Date.now()}`;
+      const response = await fetch(githubUrl + cacheBuster, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
       if (response.ok) {
         const text = await response.text();
-        console.log('Successfully loaded content:', text);
+        console.log('Successfully loaded content from GitHub:', text.substring(0, 100) + '...');
         setAiToolsText(text);
         setLastUpdated(new Date());
         return true;
       } else {
-        throw new Error('Failed to load local file');
+        throw new Error(`Failed to fetch from GitHub: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Failed to fetch AI tools list:', error);
+      console.error('Failed to fetch AI tools list from GitHub:', error);
       const fallbackContent = `1. **ChatGPT** - Advanced conversational AI for writing, coding, and problem-solving
 2. **Claude** - Anthropic's AI assistant for analysis, writing, and creative tasks  
 3. **Midjourney** - AI-powered image generation and artistic creation
@@ -51,12 +63,12 @@ const Index = () => {
     if (success) {
       toast({
         title: "Content Updated",
-        description: "AI tools list has been refreshed successfully.",
+        description: "AI tools list has been refreshed from GitHub successfully.",
       });
     } else {
       toast({
         title: "Update Failed",
-        description: "Using fallback content. Check console for details.",
+        description: "Failed to fetch from GitHub. Using fallback content. Check console for details.",
         variant: "destructive",
       });
     }
@@ -179,12 +191,12 @@ const Index = () => {
             Stay Updated
           </h3>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Click the refresh button in the header to manually update the content. 
-            The list contains the latest AI news and trending topics.
+            Click the refresh button in the header to get the latest content from GitHub. 
+            The content automatically syncs with your repository.
           </p>
-          <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            Content Available Locally
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            Content Synced from GitHub
           </div>
         </div>
       </section>
